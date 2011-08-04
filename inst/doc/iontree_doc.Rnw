@@ -1,0 +1,148 @@
+\documentclass[a4paper]{article}
+\usepackage[OT1]{fontenc}
+\usepackage{url}
+\usepackage{Sweave}
+%\VignetteIndexEntry{MSn}
+\title{Introduction to management and analysis of ion fragmentation data}
+\author{
+Mingshu Cao                                    \\
+Mingshu.Cao@agresearch.co.nz                   \\
+AgResearch Limited, Grasslands Research Center \\
+Palmerston North 4442, New Zealand             \\
+}
+\begin{document}
+\maketitle
+%%% End of title, Begin of the document
+\tableofcontents
+
+\section{Introduction}
+A few examples are given on how the 'iontree' package can be used for ion fragmentation data analysis
+and management. Ion fragmentation data also refer to ion tree or spectral tree data.  MS2 and MS3 raw scans (DIMS data, see Cao et al. 2008) were provided
+in the 'iontreeData' package along with a demo SQLite database built from the same experimental data.
+
+\section{Data source}
+MS2RAW and MS3RAW are a list of MS2 and MS3 scans, respectively. They were produced
+from mzXML data files using a function 'saveMSnRaw' from this package.
+<<>>=
+rm(list=ls())
+library(iontree)
+library(iontreeData)
+data(MS2RAW)
+data(MS3RAW)
+ls()
+length(MS2RAW)
+attributes(MS2RAW[[1]])
+@
+Use 'getMetaInfo' function to get all the necessary meta-information.   
+<<>>=
+mzxml=system.file("mzxml/DIMS1.mzXML", package="iontreeData")
+getMetaInfo(mzxml)
+@
+
+\section{Construction of ion tree}
+An ion tree could be built for a given range of m/z and retention time, the parameters
+could be obtained from MS1 peak detection of LCMS data or m/z binning of DIMS data.
+The following example shows an ion tree built from DIMS data in one sample. A full time range is
+specified for direct infusion mass spectrometry. 
+<<fig=TRUE>>=
+mz=554.5
+mzDelta=0.5
+mzRange=c(mz-mzDelta, mz+mzDelta)
+rtRange=c(0,600)
+
+idx=hasMS2(MS2RAW, mzRange, rtRange)
+
+idx.ms2=idx[1]
+ms2=MS2RAW[[idx.ms2]]
+ms3=MS3RAW[[idx.ms2]]
+
+tree1=buildIonTree(mzRange, rtRange=c(0, 600), ms2, ms3)
+tree1
+plot(tree1)
+@
+
+
+\section{Database manipulation}
+With assumed nominal mass resolution, batch construction and loading of ion trees into the database
+can be conducted for DIMS data. Because of the nosiy data in the raw MSn scans and 
+binning errors quality control is advised. QC will be discussed in a publication. \\
+A SQLite database 'mzDB.db' was provided in iontreeData package. The following example 
+is to query and plot an iontree of precusor m/z 596 from the database. m/z 596 was
+annotated as thesinine-rhammoside-hexoside from forage ryegrass (Koulman et al. 2009). 
+<<fig=TRUE>>= 
+dbname=system.file("db/mzDB.db", package = "iontreeData")
+
+db=dbConnect(dbDriver("SQLite"), dbname)
+sql="SELECT mz, ms2, ms3 FROM mz WHERE mz=596"
+q1=dbSendQuery(db, sql) 
+rs=fetch(q1, n=-1) 
+dim(rs)
+t1=rs2iontree(rs)
+
+dbClearResult(q1)
+dbDisconnect(db)
+
+plot(t1[[1]])
+@
+
+Then we use a MS3 spectrum, derived from m/z 596 with the precursor m/z 434 at the MS2 level, as a query spectrum to search the database. 
+The comparison of MS3 spectrum with MS2 spectra may provide additional structural 
+information on the MS1 ions. A comparison of 3 metrics for MS2 spectral
+similarity is demonstrated by the output of 'searchMS2' function.  
+<<fig=TRUE>>=
+query=t1[[1]]@MS3[[2]]$sp3
+premz=t1[[1]]@MS3[[2]]$premz
+premz
+
+searchMS2(query, premz, dbname, scoreFun="d")
+@
+
+<<fig=TRUE>>=
+searchMS2(query, premz, dbname, scoreFun="t")
+@
+
+<<fig=TRUE>>=
+searchMS2(query, premz, dbname, scoreFun="c")
+@
+
+In summary, although the top ion was correctly retrieved by 3 metrics, correlation-based
+similarity measurement could fail for sparse MSn spectra. For example, the 3rd top-ranked based on cosine was
+a sparse MS2 spectrum from m/z 244. The following example shows correlation without direct match of 
+product ions could be misleading. Metric 'distMS2' was based on city-block distance 
+(Cao et al 2009), and unnormalised distance score was shown.    
+     
+<<>>=
+dbname=system.file("db/mzDB.db", package = "iontreeData")
+db=dbConnect(dbDriver("SQLite"), dbname)
+sql="SELECT mz, ms2, ms3 FROM mz WHERE mz=244"
+q1=dbSendQuery(db, sql) 
+rs=fetch(q1, n=-1) 
+dim(rs)
+t1=rs2iontree(rs)
+dbClearResult(q1)
+dbDisconnect(db)
+
+x=t1[[1]]@MS2
+dim(x)
+y=topIons(query[,1], query[,2], top=nrow(x))
+x
+y
+round(cor(x[,2], y[,2]),2)
+@
+
+
+\section{References}
+\begin{itemize}
+\item Cao M,  Koulman A, Johnson LJ, Lane GA and Rasmussen S. 2008. Plant Physiology. 146:4
+\item Koulman A, Cao M, Faville M, Lane GA, Mace W and Rasmussen S. 2009. 
+Rapid Communication in Mass Spectrometry. 23.
+\end{itemize}
+
+\section{Acknowledgements}
+I would like to thank Karl Fraser, AgResearch for the discussion on the chemical aspects of
+selected spectra when preparing this document.
+ 
+<<>>=
+sessionInfo()
+@
+\end{document}

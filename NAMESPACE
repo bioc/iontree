@@ -1,0 +1,9 @@
+import(methods, rJava, RSQLite)
+importFrom(graphics, plot)
+
+export("saveMSnRaw", "getMetaInfo","hasMS2", "buildIonTree", "plotSpectrum",
+       "getMSnRaw","formatSpec","topIons", "distMS2", "createDB", 
+       "metaDataImport", "mzImport","searchMS2", "rs2iontree")
+
+exportClasses("iontree")
+exportMethods("show", "plot")
