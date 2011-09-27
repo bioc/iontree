@@ -36,7 +36,9 @@ Mingshu Cao
 }
 
 \examples{
-createDB(dbname="my.db")
+\dontrun{
+    createDB(dbname="my.db")
+}
 }
 
 \keyword{ utilities }
