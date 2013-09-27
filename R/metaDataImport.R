@@ -1,6 +1,6 @@
 metaDataImport <-
 function(dbname="mzDB.db"){
-  if(.Platform$OS.type!="widows"){
+  if(.Platform$OS.type!="windows"){
     stop("Please use sqlitebroswer for data entry.\n A Java-based editor may be provided in the later version of iontree package.")
   }
   #!!!!!!!!!!!!!!!!!!!!!!!!!!
