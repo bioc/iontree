@@ -1,6 +1,5 @@
 createDB <-
 function(dbname="mzDB.db", sql="mzDBSchema.sql"){
-  require(RSQLite)
   if(file.exists(dbname)) stop("the database already exists!")
   
   if(missing(sql) || is.null(sql)){

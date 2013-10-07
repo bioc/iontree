@@ -5,7 +5,6 @@ function(iontree, dbname="mzDB.db", exp.id){
   ion.ms2=formatSpec(iontree@MS2, fromTo="mat2str")
 
   #ion ms3 is a list
-  require(XML)
   if(length(iontree@MS3)==0){
    ion.ms3=""
   }else{

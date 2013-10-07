@@ -7,8 +7,11 @@ Plot a spectrum
 plot a mass spectrum
 }
 \usage{
-plotSpectrum(x, y, top = 20, type = "h", scale100 = FALSE, digit.label = 0, col = "black", pos = 0, main = "", clickAddLabels = FALSE, ...)
+plotSpectrum(x, y=NULL, top = 20, type = "h", scale100 = FALSE,
+    digit.label = 1, col = "black", pos = 0, main = "",
+    clickAddLabels = FALSE, ...)
 }
+
 
 \arguments{
   \item{x}{m/z}
