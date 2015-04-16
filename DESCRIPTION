@@ -1,7 +1,7 @@
 Package: iontree
 Type: Package
 Title: Data management and analysis of ion trees from ion-trap mass spectrometry 
-Version: 1.13.0
+Version: 1.14.0
 Depends: methods, rJava, RSQLite, XML
 Suggests: iontreeData 
 Author: Mingshu Cao
